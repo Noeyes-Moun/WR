@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WR - Water Reminder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+  :root {
+    --blue-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --blue-dark: #1a3c72;
+    --bg-light: #e6f0fa;
+    --bg-dark: #0b1f3a;
+    --text-dark: #03254c;
+    --text-light: #f0f9ff;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0; padding: 0;
+    background: var(--bg-light);
+    color: var(--text-dark);
+    transition: background-color 0.5s, color 0.5s;
+  }
+  body.dark {
+    background: var(--bg-dark);
+    color: var(--text-light);
+  }
+
+  nav {
+    background: var(--blue-dark);
+    padding: 1rem 0;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav ul {
+    margin: 0; padding: 0;
+    display: flex; justify-content: center; gap: 1.8rem;
+    list-style: none;
+  }
+  nav a {
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-decoration: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    transition: background 0.3s ease;
+  }
+  nav a:hover, nav a.active {
+    background: var(--blue-gradient);
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 2rem auto;
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transition: background-color 0.5s ease, color 0.5s ease;
+  }
+  body.dark .container {
+    background: #10315b;
+    color: var(--text-light);
+  }
+
+  h1, h2 {
+    background: var(--blue-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+  }
+
+  button#darkModeToggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: var(--blue-gradient);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 6px 12px rgba(0,242,254,0.6);
+    user-select: none;
+    transition: background 0.3s ease, transform 0.2s ease;
+    z-index: 1000;
+  }
+  button#darkModeToggle:hover {
+    background: #00a5f6;
+    transform: scale(1.05);
+  }
+
+  /* Simple fade animation */
+  .page {
+    display: none;
+    animation: fadeIn 0.7s ease forwards;
+  }
+  .page.active {
+    display: block;
+  }
+  @keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+  }
+
+  /* Style for water tracker */
+  #tracker {
+    width: 140px; height: 360px;
+    background: var(--blue-dark);
+    border-radius: 70px / 180px;
+    margin: 0 auto 1.5rem;
+    position: relative;
+    box-shadow:
+      inset 0 10px 25px rgba(255,255,255,0.15),
+      0 10px 20px rgba(58, 153, 216, 0.5);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+  }
+  #tracker:hover { transform: scale(1.05); }
+  #fill {
+    position: absolute; bottom: 0; width: 100%; height: 0%;
+    background: var(--blue-gradient);
+    border-radius: 0 0 70px / 60px;
+    box-shadow: 0 0 20px #00f2fe, inset 0 -2px 8px #00c3ff;
+    transition: height 0.8s ease-in-out;
+  }
+  .buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  button.actionBtn {
+    background: var(--blue-gradient);
+    border: none;
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 0.8rem 1.8rem;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(0, 242, 254, 0.7);
+    transition: background 0.3s ease, transform 0.2s ease;
+    user-select: none;
+  }
+  button.actionBtn:hover {
+    background: #00a5f6;
+    transform: scale(1.05);
+  }
+  button.actionBtn:active { transform: scale(0.95); }
+
+  /* Calculator */
+  label, select, input {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+  }
+  input, select {
+    padding: 0.5rem 0.8rem;
+    border-radius: 12px;
+    border: 1.5px solid var(--blue-dark);
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  input:focus, select:focus {
+    border-color: #00f2fe;
+    outline: none;
+    box-shadow: 0 0 8px #00f2fe;
+  }
+  body.dark input, body.dark select {
+    background: #16466d;
+    color: var(--text-light);
+    border-color: #0f3a6b;
+  }
+  #calcResult {
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+    color: var(--blue-dark);
+  }
+  body.dark #calcResult { color: var(--text-light); }
+
+  section.info-box {
+    background: var(--bg-light);
+    border-radius: 15px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.8rem;
+    box-shadow: 0 7px 20px rgba(58, 153, 216, 0.5);
+  }
+  body.dark section.info-box {
+    background: #0f3a6b;
+    color: var(--text-light);
+  }
+
+  /* Footer contact */
+  footer {
+    margin-top: 3rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #555;
+  }
+  body.dark footer { color: #ccc; }
+</style>
+</head>
+<body>
+
+<button id="darkModeToggle" aria-label="Toggle dark mode">🌙</button>
+
+<nav role="navigation" aria-label="Main navigation">
+  <ul>
+    <li><a href="#" data-page="home" class="active">Home</a></li>
+    <li><a href="#" data-page="tips">Tips & Tricks</a></li>
+    <li><a href="#" data-page="about">Tentang Air</a></li>
+    <li><a href="#" data-page="advice">Saran</a></li>
+    <li><a href="#" data-page="contact">Kontak</a></li>
+  </ul>
+</nav>
+
+<div class="container" id="content">
+
+  <!-- Home Page -->
+  <section id="home" class="page active" role="main" aria-labelledby="homeTitle">
+    <h1 id="homeTitle">WR - Water Reminder</h1>
+
+    <div id="tracker" role="img" aria-label="Water bottle showing water intake">
+      <div id="fill"></div>
+    </div>
+    <div class="buttons" role="group" aria-label="Water intake controls">
+      <button id="addGlassBtn" class="actionBtn" aria-label="Add one glass of water">+1 Gelas 💧</button>
+      <button id="resetBtn" class="actionBtn" aria-label="Reset daily intake">Reset 🔄</button>
+    </div>
+
+    <section id="hydrationStatus" class="info-box" aria-live="polite" aria-atomic="true">
+      Status hidrasi: <span id="statusText">Ayo minum air supaya tubuh tetap sehat!</span>
+    </section>
+
+    <section id="calculator" aria-labelledby="calcTitle">
+      <h2 id="calcTitle">Kalkulator Kebutuhan Air Harian</h2>
+      <form id="calcForm" aria-describedby="calcDesc">
+        <p id="calcDesc">Masukkan berat badan dan tingkat aktivitas Anda.</p>
+        <label for="weightInput">Berat Badan (kg):</label>
+        <input id="weightInput" type="number" min="1" max="300" required />
+        <label for="activityLevel">Tingkat Aktivitas:</label>
+        <select id="activityLevel" required>
+          <option value="1.0">Sedentary (Sedikit bergerak)</option>
+          <option value="1.2">Light (Ringan)</option>
+          <option value="1.4" selected>Moderate (Sedang)</option>
+          <option value="1.6">Active (Aktif)</option>
+          <option value="1.8">Very Active (Sangat aktif)</option>
+        </select>
+        <button type="submit" class="actionBtn" aria-label="Hitung kebutuhan air harian">Hitung</button>
+      </form>
+      <p id="calcResult" aria-live="polite" aria-atomic="true"></p>
+    </section>
+  </section>
+
+  <!-- Tips & Tricks -->
+  <section id="tips" class="page" aria-labelledby="tipsTitle">
+    <h1 id="tipsTitle">Tips & Tricks Minum Air</h1>
+    <section class="info-box">
+      <h2>Tips Minum Air Sehat</h2>
+      <ul>
+        <li>Minumlah air secara rutin setiap hari minimal 8 gelas.</li>
+        <li>Mulailah hari dengan segelas air setelah bangun tidur.</li>
+        <li>Gunakan botol air yang menarik untuk meningkatkan semangat minum.</li>
+        <li>Tambahkan irisan lemon atau buah untuk variasi rasa.</li>
+        <li>Ingatkan diri dengan alarm atau pengingat minum air.</li>
+      </ul>
+    </section>
+    <section class="info-box">
+      <h2>Trik Agar Tetap Terhidrasi</h2>
+      <ul>
+        <li>Minum air sebelum merasa haus.</li>
+        <li>Perhatikan warna urin, jika kuning pekat, perlu lebih banyak minum.</li>
+        <li>Konsumsi makanan yang mengandung banyak air seperti semangka dan mentimun.</li>
+        <li>Hindari minuman berkafein berlebihan karena bersifat diuretik.</li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- Tentang Air -->
+  <section id="about" class="page" aria-labelledby="aboutTitle">
+    <h1 id="aboutTitle">Tentang Air</h1>
+    <section class="info-box">
+      <h2>Fakta Penting Air</h2>
+      <p>Air adalah komponen utama tubuh manusia yang menyusun sekitar 60% dari berat badan. Air membantu mengatur suhu tubuh, melancarkan metabolisme, dan menjaga fungsi organ tetap optimal.</p>
+    </section>
+    <section class="info-box">
+      <h2>Manfaat Minum Air Cukup</h2>
+      <ul>
+        <li>Meningkatkan konsentrasi dan energi.</li>
+        <li>Mendukung proses pencernaan.</li>
+        <li>Mencegah dehidrasi dan masalah kesehatan lainnya.</li>
+        <li>Membantu kulit tetap sehat dan kenyal.</li>
+      </ul>
+    </section>
+  </section>
+
+  <!-- Saran -->
+  <section id="advice" class="page" aria-labelledby="adviceTitle">
+    <h1 id="adviceTitle">Saran Harian untuk Hidrasi</h1>
+    <section class="info-box">
+      <p>Pastikan selalu membawa botol air kemanapun Anda pergi.</p>
+      <p>Atur pengingat minum air setiap 1-2 jam agar tidak lupa.</p>
+      <p>Kurangi konsumsi minuman manis dan berkafein yang bisa menyebabkan dehidrasi.</p>
+      <p>Perbanyak konsumsi buah dan sayuran yang mengandung air.</p>
+      <p>Sesuaikan kebutuhan air dengan aktivitas fisik dan kondisi cuaca.</p>
+    </section>
+  </section>
+
+  <!-- Kontak -->
+  <section id="contact" class="page" aria-labelledby="contactTitle">
+    <h1 id="contactTitle">Kontak Kami</h1>
+    <section class="info-box">
+      <p>Jika ada pertanyaan, saran, atau kritik, silakan hubungi kami di:</p>
+      <p><strong>Email:</strong> <a href="mailto:wr.willpowe@gmail.com">wr.willpower@gmail.com</a></p>
+    </section>
+  </section>
+
+</div>
+
+<footer>
+  &copy; 2025 WR - Water Reminder
+</footer>
+
+<script>
+  // Dark mode toggle
+  const darkModeToggle = document.getElementById('darkModeToggle');
+  const body = document.body;
+
+  darkModeToggle.addEventListener('click', () => {
+    body.classList.toggle('dark');
+    if(body.classList.contains('dark')) {
+      darkModeToggle.textContent = '☀️';
+      darkModeToggle.setAttribute('aria-label', 'Toggle light mode');
+    } else {
+      darkModeToggle.textContent = '🌙';
+      darkModeToggle.setAttribute('aria-label', 'Toggle dark mode');
+    }
+  });
+
+  // Navigation page switching
+  const navLinks = document.querySelectorAll('nav a');
+  const pages = document.querySelectorAll('.page');
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetPage = link.dataset.page;
+
+      // Remove active class on all nav links
+      navLinks.forEach(l => l.classList.remove('active'));
+      // Add active to clicked link
+      link.classList.add('active');
+
+      // Show target page, hide others
+      pages.forEach(page => {
+        if(page.id === targetPage) {
+          page.classList.add('active');
+        } else {
+          page.classList.remove('active');
+        }
+      });
+    });
+  });
+
+  // Water tracker logic (same as sebelumnya)
+  const fill = document.getElementById('fill');
+  const addGlassBtn = document.getElementById('addGlassBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const statusText = document.getElementById('statusText');
+  const weightInput = document.getElementById('weightInput');
+  const activityLevel = document.getElementById('activityLevel');
+  const calcForm = document.getElementById('calcForm');
+  const calcResult = document.getElementById('calcResult');
+
+  const GLASS_VOLUME_ML = 250;
+  const DAILY_TARGET_GLASSES = 8;
+
+  let intakeGlasses = 0;
+  // Load today's intake from localStorage
+  const todayKey = new Date().toISOString().slice(0,10);
+  const storedIntake = localStorage.getItem(`intake-${todayKey}`);
+  if(storedIntake) intakeGlasses = parseInt(storedIntake);
+
+  function updateFill() {
+    let percentage = (intakeGlasses / DAILY_TARGET_GLASSES) * 100;
+    if(percentage > 100) percentage = 100;
+    fill.style.height = percentage + '%';
+  }
+  function updateStatus() {
+    if(intakeGlasses === 0) {
+      statusText.textContent = 'Ayo minum air supaya tubuh tetap sehat!';
+    } else if(intakeGlasses < DAILY_TARGET_GLASSES) {
+      statusText.textContent = `Sudah minum ${intakeGlasses} gelas. Teruskan!`;
+    } else {
+      statusText.textContent = `Hebat! Sudah memenuhi target ${DAILY_TARGET_GLASSES} gelas.`;
+    }
+  }
+  function saveIntake() {
+    localStorage.setItem(`intake-${todayKey}`, intakeGlasses);
+  }
+
+  addGlassBtn.addEventListener('click', () => {
+    intakeGlasses++;
+    updateFill();
+    updateStatus();
+    saveIntake();
+  });
+  resetBtn.addEventListener('click', () => {
+    intakeGlasses = 0;
+    updateFill();
+    updateStatus();
+    saveIntake();
+  });
+
+  calcForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const weight = parseFloat(weightInput.value);
+    const activity = parseFloat(activityLevel.value);
+
+    if(!weight || weight <= 0) {
+      calcResult.textContent = 'Masukkan berat badan valid.';
+      return;
+    }
+    const neededMl = weight * 35 * activity;
+    const neededLiters = (neededMl / 1000).toFixed(2);
+    calcResult.textContent = `Anda membutuhkan sekitar ${neededLiters} liter air per hari.`;
+  });
+
+  // Initialize UI
+  updateFill();
+  updateStatus();
+</script>
+</body>
+</html>
